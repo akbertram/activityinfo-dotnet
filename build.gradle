@@ -62,44 +62,31 @@ msbuild {
     generateDoc = false
 }
 
-task copyAssembly(type: Copy) {
-    dependsOn 'msbuild'
-    from("${buildDir}/msbuild/bin") {
-        include "ActivityInfo.Client.dll"
-        include "ActivityInfo.Client.pdb"
-    }
-    into "${buildDir}/tmp/nugetPack"
-}
-
 nunit {
     testAssemblies = [ msbuild.projects['ActivityInfo.CLient'] ]
 }
 
-nugetPack {
+nugetSpec {
     
-    dependsOn copyAssembly
-    
-    nuspec {
-        metadata() {
-            id 'ActivityInfo.Client'
-            delegate.version project.version
-            title 'ActivityInfo.org Client'
-            authors 'BeDataDriven'
-            delegate.description 'API Client for ActivityInfo.org'
-            projectUrl('https://www.activityinfo.org')
-            licenseUrl('http://www.gnu.org/licenses/gpl-3.0.en.html')
-            iconUrl('https://www.activityinfo.org/img/logo.png')
-            copyright 'Copyright © BeDataDriven 2010-2015'
-        }
-        delegate.files() {
-            delegate.file(src: "ActivityInfo.Client.dll", target: 'lib')
-        }
-    }
+    nuspec = [
+        metadata: [
+            id: 'ActivityInfo.Client',
+            version: project.version,
+            title: 'ActivityInfo.org Client',
+            authors: 'BeDataDriven',
+            description: 'API Client for ActivityInfo.org',
+            projectUrl: 'https://www.activityinfo.org',
+            licenseUrl: 'http://www.gnu.org/licenses/gpl-3.0.en.html',
+            iconUrl: 'https://www.activityinfo.org/img/logo.png',
+            copyright: 'Copyright © BeDataDriven 2010-2018'
+        ],
+        files: [
+            { file (src: "${buildDir}/msbuild/bin/ActivityInfo.Client.dll", target: 'lib') }
+        ]
+    ]
 }
 
-
 nugetPush {
-    dependsOn 'nugetPack'
     nupkgFile = "build/distributions/ActivityInfo.Client.${project.version}.nupkg"
 }
 
