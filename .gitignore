@@ -3,4 +3,6 @@ obj
 packages
 *.pidb
 *.userprefs
-
+build
+.gradle
+.vs

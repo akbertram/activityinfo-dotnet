@@ -1,0 +1,90 @@
+plugins {
+  id "com.ullink.msbuild" version "2.21"
+  id 'com.ullink.nunit' version '1.12'
+  id "com.ullink.nuget" version "2.7"
+}
+
+def buildNumber = System.getenv('BUILD_NUMBER')
+if(buildNumber) {
+   project.version = "3.0.${buildNumber}"
+} else {
+   project.version = "3.dev"
+}
+
+
+// Update the library version in AssemblyInfo.cs
+assemblyInfoPatcher {
+    if(!System.getenv('BUILD_NUMBER')) {
+      enabled = false
+    }
+    version = project.version
+
+    // defaults to above version, fewer restrictions on the format
+    fileVersion = version
+}
+
+msbuild {
+    
+    dependsOn 'nugetRestore'
+    dependsOn 'assemblyInfoPatcher'
+    
+    solutionFile = "${projectDir}/ActivityInfoDotNet.sln"
+
+    projectName = 'Client'
+    
+    // targets to execute (/t:Clean;Rebuild, no default)
+    targets = ['Clean', 'Rebuild']
+
+    // Below values can override settings from the project file
+
+    // overrides project OutputPath
+    destinationDir = 'build/msbuild/bin'
+
+    // overrides project IntermediaryOutputPath
+    intermediateDir = 'build/msbuild/obj'
+
+    // Generates XML documentation file (from javadoc through custom DocLet)
+    generateDoc = false
+}
+
+task copyAssembly(type: Copy) {
+    dependsOn 'msbuild'
+    from("${buildDir}/msbuild/bin") {
+        include "ActivityInfo.Client.dll"
+        include "ActivityInfo.Client.pdb"
+    }
+    into "${buildDir}/tmp/nugetPack"
+}
+
+nunit {
+    testAssemblies = [ msbuild.projects['ActivityInfo.CLient'] ]
+}
+
+nugetPack {
+    
+    dependsOn copyAssembly
+    
+    nuspec {
+        metadata() {
+            id 'ActivityInfo.Client'
+            delegate.version project.version
+            title 'ActivityInfo.org Client'
+            authors 'BeDataDriven'
+            delegate.description 'API Client for ActivityInfo.org'
+            projectUrl('https://www.activityinfo.org')
+            licenseUrl('http://www.gnu.org/licenses/gpl-3.0.en.html')
+            iconUrl('https://www.activityinfo.org/img/logo.png')
+            copyright 'Copyright © BeDataDriven 2010-2015'
+        }
+        delegate.files() {
+            delegate.file(src: "ActivityInfo.Client.dll", target: 'lib')
+        }
+    }
+}
+
+
+nugetPush {
+    dependsOn 'nugetPack'
+    nupkgFile = "build/distributions/ActivityInfo.Client.${project.version}.nupkg"
+}
+

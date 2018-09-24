@@ -6,7 +6,7 @@
     <ProjectGuid>{CAC0F986-D523-4F9A-9F86-32525FBD9303}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ActivityInfo</RootNamespace>
-    <AssemblyName>ActivityInfoDotNet</AssemblyName>
+    <AssemblyName>ActivityInfo.Client</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
