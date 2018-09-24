@@ -92,5 +92,6 @@ nugetSpec {
 nugetPush {
     nupkgFile = "build/distributions/ActivityInfo.Client.${project.version}.nupkg"
     apiKey = System.getenv("NUGET_API_KEY")
+    serverUrl = "https://api.nuget.org/v3/index.json"
 }
 
