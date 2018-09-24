@@ -23,6 +23,9 @@ assemblyInfoPatcher {
     fileVersion = version
 }
 
+nuget {
+    version = '4.7.1'
+
 msbuild {
     
     dependsOn 'nugetRestore'
