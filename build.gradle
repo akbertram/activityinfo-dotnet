@@ -64,6 +64,9 @@ msbuild {
 
 nunit {
     testAssemblies = [ msbuild.projects['ActivityInfo.CLient'] ]
+    reportFolder = project.file("buildDir/unit-reports")
+    logFile = 'TestOutput.log'
+
 }
 
 nugetSpec {
@@ -88,5 +91,6 @@ nugetSpec {
 
 nugetPush {
     nupkgFile = "build/distributions/ActivityInfo.Client.${project.version}.nupkg"
+    apiKey = System.getenv("NUGET_API_KEY")
 }
 
