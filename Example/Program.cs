@@ -8,10 +8,10 @@ namespace UpdateTest
 {
     public enum SchoolType
     {
-        [EnumId("t0499704438")]
+        [EnumId("t1115438694")]
         Public,
 
-        [EnumId("t0499127315")]
+        [EnumId("t1107936090")]
         Catholic
     }
 
@@ -48,7 +48,7 @@ namespace UpdateTest
         
         public static void Main(string[] args)
         {
-            var client = new ActivityInfo.Client("api+training@bedatadriven.com", "REPLACE ME");
+            var client = new ActivityInfo.Client("api+training@bedatadriven.com", "testing123");
             var partners = client.QueryPartners(9907);
 
             var campFormId = "E0000001527";

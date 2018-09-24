@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Reflection;
 using ActivityInfo.Query;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RestSharp;
-using RestSharp.Authenticators;
+
 
 namespace ActivityInfo
 {
     public class Client
     {
 
-        private RestClient client;
         private Random random = new Random();
         private Newtonsoft.Json.JsonSerializer jsonSerializer;
-        private RestSharp.Serializers.ISerializer restSerializer;
+        private string baseUrl;
+        private NetworkCredential credential;
 
         public Client(string email, String password)
         {
-            client = new RestClient();
-            client.BaseUrl = new Uri("https://www.activityinfo.org/resources");
-            client.Authenticator = new HttpBasicAuthenticator(email, password);
-            client.AddHandler("application/json", RestSharp.Serializers.Newtonsoft.Json.NewtonsoftJsonSerializer.Default);
-
+            this.baseUrl = "https://www.activityinfo.org/resources";
+            this.credential = new NetworkCredential(email, password);
             jsonSerializer = new Newtonsoft.Json.JsonSerializer();
-            restSerializer = new RestSharp.Serializers.Newtonsoft.Json.NewtonsoftJsonSerializer(jsonSerializer);
         }
 
         public List<Partner> QueryPartners(int databaseId) 
@@ -40,40 +38,78 @@ namespace ActivityInfo
             return mapper.Map(columnSet);
         }
 
-        public ColumnSet Query(QueryModel query) {
-            var request = new RestRequest();
-            request.Resource = "query/columns";
-            request.JsonSerializer = restSerializer;
-            request.Method = Method.POST;
-            request.AddJsonBody(query);
-            request.AddHeader("Accept", "application/json");
-            var response = client.Execute<ColumnSet>(request);
-            if(response.StatusCode != System.Net.HttpStatusCode.OK) {
-                throw new Exception(String.Format("Query failed with status code {0}: {1}", response.StatusCode, response.Content));
-            }
-            return response.Data;
+        private byte[] SerializeBody(object value) {
+
+            StringWriter writer = new StringWriter();
+            jsonSerializer.Serialize(new JsonTextWriter(writer), value);
+
+            return System.Text.Encoding.UTF8.GetBytes(writer.ToString());
         }
 
-        private string generateId()
+        public ColumnSet Query(QueryModel query) {
+
+            byte[] body = SerializeBody(query);
+
+            HttpWebRequest request = WebRequest.CreateHttp(baseUrl + "/query/columns");
+            request.Accept = "application/json";
+            request.ContentType = "application/json; charset=UTF-8";
+            request.ContentLength = body.Length;
+            request.PreAuthenticate = true;
+            request.Method = "POST";
+            request.Credentials = this.credential;
+
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(body, 0, body.Length);
+            }
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            if(response.StatusCode != HttpStatusCode.OK) {
+                throw new ActivityInfoException(String.Format("Request failed: {0}", response.StatusCode));
+            }
+
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            {
+                return this.jsonSerializer.Deserialize<ColumnSet>(new JsonTextReader(reader));
+            }
+        }
+
+        private string GenerateId()
         {
             return String.Format("s{0:D10}", random.Next());
         }
 
         public T QueryRecord<T>(RecordRef recordRef) where T : BaseRecord, new() {
-            var request = new RestRequest();
-            request.Resource = String.Format("form/{0}/record/{1}", recordRef.FormId, recordRef.RecordId);
-            request.JsonSerializer = restSerializer;
 
-            var response = client.Execute<JObject>(request);
+            var url = String.Format("{0}/form/{1}/record/{2}", 
+                                    baseUrl, 
+                                    recordRef.FormId, 
+                                    recordRef.RecordId);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Accept = "application/json";
+            request.ContentType = "application/json; charset=UTF-8";
+            request.PreAuthenticate = true;
+            request.Method = "GET";
+            request.Credentials = this.credential;
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new Exception(string.Format("Request failed: {0}", response.StatusCode));
+                throw new ActivityInfoException(String.Format("Request failed: {0}", response.StatusCode));
+            }
+
+            JObject jsonObject;
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            {
+                jsonObject = this.jsonSerializer.Deserialize<JObject>(new JsonTextReader(reader));
             }
 
             T record = new T();
-            record.RecordId = response.Data["recordId"].ToString();
-            record.ReadFields(response.Data);
+            record.RecordId = jsonObject["recordId"].ToString();
+            record.ReadFields(jsonObject);
 
             return record;
         }
@@ -88,7 +124,7 @@ namespace ActivityInfo
         /// <typeparam name="T">The type of the record</typeparam>
         public RecordRef CreateRecord<T>(T record) where T : BaseRecord {
             Transaction tx = new Transaction();
-            record.RecordId = generateId();
+            record.RecordId = GenerateId();
 
             tx.AddChange(new RecordUpdate(record));
 
@@ -111,18 +147,43 @@ namespace ActivityInfo
 
         public void ExecuteUpdate(Transaction tx) 
         {
-            var request = new RestRequest();
-            request.Resource = "update";
-            request.Method = Method.POST;
-            request.JsonSerializer = new RestSharp.Serializers.Newtonsoft.Json.NewtonsoftJsonSerializer();
-            request.AddJsonBody(tx);
+            byte[] body = SerializeBody(tx);
 
-            var response = client.Execute(request);
-            if(response.StatusCode == System.Net.HttpStatusCode.BadRequest) {
-                throw new Exception(string.Format("Invalid update: {0}", response.Content));
+            HttpWebRequest request = WebRequest.CreateHttp(baseUrl + "/update");
+            request.Accept = "application/json";
+            request.ContentType = "application/json; charset=UTF-8";
+            request.ContentLength = body.Length;
+            request.PreAuthenticate = true;
+            request.Credentials = this.credential;
+            request.Method = "POST";
 
-            } else if(response.StatusCode != System.Net.HttpStatusCode.OK) {
-                throw new Exception(string.Format("Request failed: {0}", response.StatusCode));
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(body, 0, body.Length);
+            }
+
+            HttpWebResponse response;
+            try
+            {
+                response = (HttpWebResponse)request.GetResponse();
+            } catch(WebException e) {
+                response = (HttpWebResponse)e.Response;   
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                throw new ActivityInfoException(string.Format("Invalid update: {0}", ReadErrorMessage(response)));
+            }
+            else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new ActivityInfoException(string.Format("Request failed: {0}", response.StatusCode));
+            }
+        }
+
+        private string ReadErrorMessage(WebResponse response) {
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            {
+                return reader.ReadToEnd();
             }
         }
     }
