@@ -1,7 +1,7 @@
 plugins {
   id "com.ullink.msbuild" version "2.21"
   id 'com.ullink.nunit' version '1.12'
-  id "com.ullink.nuget" version "2.7"
+  id "com.ullink.nuget" version "2.17"
 }
 
 def buildNumber = System.getenv('BUILD_NUMBER')
@@ -25,6 +25,17 @@ assemblyInfoPatcher {
 
 nuget {
     version = '4.7.1'
+}
+
+// Not used..
+// See https://github.com/Ullink/gradle-nuget-plugin/issues/66
+nugetSources {
+    operation = 'add'
+    sourceName = 'localNuGetFeed'
+    sourceUrl = 'http://foo.com'
+    username = 'optional username'
+    password = 'optional password'
+    configFile = 'nuget.config'
 }
 
 msbuild {
