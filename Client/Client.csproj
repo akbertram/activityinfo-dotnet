@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CAC0F986-D523-4F9A-9F86-32525FBD9303}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ActivityInfo</RootNamespace>
+    <AssemblyName>ActivityInfoDotNet</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.106.4.1\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp.Serializers.Newtonsoft.Json">
+      <HintPath>..\packages\RestSharp.Newtonsoft.Json.1.5.0\lib\net452\RestSharp.Serializers.Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Client.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecordUpdate.cs" />
+    <Compile Include="Partner.cs" />
+    <Compile Include="GeoPoint.cs" />
+    <Compile Include="Transaction.cs" />
+    <Compile Include="IChange.cs" />
+    <Compile Include="BaseRecord.cs" />
+    <Compile Include="RecordUpdateJsonConverter.cs" />
+    <Compile Include="IRecord.cs" />
+    <Compile Include="RecordRef.cs" />
+    <Compile Include="RecordRefJsonConverter.cs" />
+    <Compile Include="Query\BaseQueryResult.cs" />
+    <Compile Include="Query\ColumnModel.cs" />
+    <Compile Include="Query\ColumnSetDeserializer.cs" />
+    <Compile Include="Query\ColumnSet.cs" />
+    <Compile Include="Query\ColumnView.cs" />
+    <Compile Include="Query\QueryModel.cs" />
+    <Compile Include="Query\QueryMapper.cs" />
+    <Compile Include="Query\Formula.cs" />
+    <Compile Include="Query\RecordId.cs" />
+    <Compile Include="Query\FormId.cs" />
+    <Compile Include="Query\ColumnType.cs" />
+    <Compile Include="EnumId.cs" />
+    <Compile Include="ActivityInfoException.cs" />
+    <Compile Include="Query\RowSource.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Query\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
