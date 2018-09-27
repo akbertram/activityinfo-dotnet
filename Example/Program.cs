@@ -56,6 +56,11 @@ namespace UpdateTest
 
             var form = client.QuerySchema("a2145507918");
 
+            var rows = client.QueryAllColumns("a2145507918").ToRows();
+            foreach(Row row in rows) {
+                Console.WriteLine(row.ToString());
+            }
+
             var partners = client.QueryPartners(9907);
 
             var campFormId = "E0000001527";
