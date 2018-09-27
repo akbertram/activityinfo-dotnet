@@ -61,7 +61,7 @@
     <Compile Include="ActivityInfoException.cs" />
     <Compile Include="Query\RowSource.cs" />
     <Compile Include="DateTimeConverter.cs" />
-    <Compile Include="UpdateBuilder.cs" />
+    <Compile Include="RecordUpdateBuilder.cs" />
     <Compile Include="DatabaseMetadata.cs" />
     <Compile Include="Resource.cs" />
     <Compile Include="Schema\FormSchema.cs" />
@@ -70,6 +70,8 @@
     <Compile Include="Schema\FieldType.cs" />
     <Compile Include="Schema\FormElementJsonConverter.cs" />
     <Compile Include="Schema\FormSection.cs" />
+    <Compile Include="Query\Row.cs" />
+    <Compile Include="RecordChangeJsonConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

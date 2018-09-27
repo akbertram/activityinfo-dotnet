@@ -49,6 +49,7 @@ namespace UpdateTest
         
         public static void Main(string[] args)
         {
+
             var client = new ActivityInfo.Client("api+training@bedatadriven.com", "testing123");
 
             var database = client.QueryDatabase(9907);
@@ -74,9 +75,7 @@ namespace UpdateTest
             var records = client.Query<School>("a2145507918");
 
             Console.WriteLine(records);
-
         }
-
 
 
     }

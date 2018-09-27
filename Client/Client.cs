@@ -68,6 +68,11 @@ namespace ActivityInfo
             return mapper.Map(columnSet);
         }
 
+        public ColumnSet QueryAllColumns(string formId)
+        {
+            return QueryResource<ColumnSet>(String.Format("/form/{0}/query/columns", formId));
+        }
+
         private byte[] SerializeBody(object value) {
 
             StringWriter writer = new StringWriter();
@@ -165,6 +170,7 @@ namespace ActivityInfo
 
         public void DeleteRecord(RecordRef recordRef)
         {
+            
 
         }
 
@@ -176,6 +182,14 @@ namespace ActivityInfo
         public void UpdateRecord<T>(T record) where T : BaseRecord {
             Transaction tx = new Transaction();
             tx.AddChange(new RecordUpdate(record));
+
+            ExecuteUpdate(tx);
+        }
+
+        public void ExecuteUpdate(IChange change) 
+        {
+            Transaction tx = new Transaction();
+            tx.AddChange(change);
 
             ExecuteUpdate(tx);
         }

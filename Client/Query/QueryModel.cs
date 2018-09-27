@@ -30,6 +30,9 @@ namespace ActivityInfo.Query
             }
         }
 
+        [JsonProperty("filter")]
+        public string Filter { get; set; }
+
         public void AddRecordId(String columnId) {
             _columns.Add(new ColumnModel(columnId, "_id"));
         }

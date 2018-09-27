@@ -5,10 +5,6 @@ namespace ActivityInfo.Schema
 {
     public class Field : FormElement
     {
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
         [JsonProperty("code")]
         public string Code { get; set; }
 
@@ -26,6 +22,9 @@ namespace ActivityInfo.Schema
 
         [JsonProperty("required")]
         public bool Required { get; set; }
+
+        [JsonProperty("key")]
+        public bool Key { get; set; }
 
         [JsonIgnore]
         public FieldType Type { get; set; }

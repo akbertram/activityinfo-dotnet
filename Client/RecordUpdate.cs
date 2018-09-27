@@ -7,7 +7,7 @@ namespace ActivityInfo
     public class RecordUpdate : IChange
     {
         private IRecord record;
-
+            
         public RecordUpdate(IRecord record)
         {
             this.record = record;

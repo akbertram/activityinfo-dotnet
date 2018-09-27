@@ -29,5 +29,13 @@ namespace ActivityInfo.Query
         {
             get { return columns[columnId]; }
         }
+
+        public List<Row> ToRows() {
+            List<Row> rows = new List<Row>();
+            for (int i = 0; i < rowCount;++i) {
+                rows.Add(new Row(this, i));
+            }
+            return rows;
+        }
     }
 }

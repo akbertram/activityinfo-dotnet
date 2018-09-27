@@ -60,7 +60,7 @@ class School : BaseRecord
 The type of the property should correspond to the ActivityInfo field type:
 
 ActivityInfo Field Type  | .NET Property Type
--------------------------+--------------------
+-------------------------|--------------------
 Text, Narrative, Barcode | string 
 Serial Number            | string
 Quantity                 | int, double
