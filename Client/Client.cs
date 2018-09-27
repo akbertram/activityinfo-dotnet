@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using ActivityInfo.Query;
+using ActivityInfo.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -23,12 +24,41 @@ namespace ActivityInfo
             this.baseUrl = "https://www.activityinfo.org/resources";
             this.credential = new NetworkCredential(email, password);
             jsonSerializer = new Newtonsoft.Json.JsonSerializer();
+            jsonSerializer.DateFormatString = "yyyy-MM-dd"; 
         }
 
         public List<Partner> QueryPartners(int databaseId) 
         {
             var formId = string.Format("P{0:D10}", databaseId);
             return Query<Partner>(formId);
+        }
+
+        public T QueryResource<T>(string path) 
+        {
+            HttpWebRequest request = WebRequest.CreateHttp(baseUrl + path);
+            request.Accept = "application/json";
+            request.ContentType = "application/json; charset=UTF-8";
+            request.PreAuthenticate = true;
+            request.Method = "GET";
+            request.Credentials = this.credential;
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            {
+                return this.jsonSerializer.Deserialize<T>(new JsonTextReader(reader));
+            }
+        }
+
+        public DatabaseMetadata QueryDatabase(int databaseId) {
+            return QueryResource<DatabaseMetadata>(
+                String.Format("/database/{0}", databaseId));
+        }
+
+        public object QuerySchema(string formId)
+        {
+            return QueryResource<FormSchema>(
+                String.Format("/form/{0}/schema", formId));
         }
 
         public List<T> Query<T>(string formId) where T : new()
@@ -131,6 +161,11 @@ namespace ActivityInfo
             ExecuteUpdate(tx);
 
             return record.Ref;
+        }
+
+        public void DeleteRecord(RecordRef recordRef)
+        {
+
         }
 
         /// <summary>

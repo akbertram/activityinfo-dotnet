@@ -21,10 +21,11 @@ namespace UpdateTest
         {
         }
         public string Name { get; set; }
-        public ActivityInfo.RecordRef Partner { get; set; }
-        public ActivityInfo.GeoPoint Point { get; set; }
+        public DateTime DateStarted { get; set; }
+        public RecordRef Partner { get; set; }
+        public GeoPoint Point { get; set; }
         public int Students { get; set; }
-        public ActivityInfo.RecordRef Camp { get; set; }
+        public RecordRef Camp { get; set; }
         public SchoolType Type { get; set; }
     }
 
@@ -49,6 +50,11 @@ namespace UpdateTest
         public static void Main(string[] args)
         {
             var client = new ActivityInfo.Client("api+training@bedatadriven.com", "testing123");
+
+            var database = client.QueryDatabase(9907);
+
+            var form = client.QuerySchema("a2145507918");
+
             var partners = client.QueryPartners(9907);
 
             var campFormId = "E0000001527";
@@ -61,6 +67,7 @@ namespace UpdateTest
             school.Students = 94;
             school.Camp = new RecordRef(campFormId, camps[0].Id);
             school.Type = SchoolType.Catholic;
+            school.DateStarted = new DateTime(1982, 1, 16);
 
             var newRecordRef = client.CreateRecord(school);
 

@@ -140,16 +140,38 @@ namespace ActivityInfo.Query
             }
         }
 
+        private class DateTimeConverter : IConverter
+        {
+            public object convert(IColumnView column, int rowIndex)
+            {
+                var s = column.GetString(rowIndex);
+                if (s == null)
+                {
+                    return null;
+                }
+                return DateTime.Parse(s);
+            }
+        }
+
         private static IConverter converterForType(PropertyInfo property) {
             Type type = property.PropertyType;
-            if(type.Equals(typeof(int))) {
+            if (type.Equals(typeof(int)))
+            {
                 return new IntConverter();
-            } else if(type.Equals(typeof(string))) {
+            }
+            else if (type.Equals(typeof(string)))
+            {
                 return new StringConverter();
-            } else if(type.Equals(typeof(double))) {
+            }
+            else if (type.Equals(typeof(double)))
+            {
                 return new DoubleConverter();
-            } else if(type.IsEnum) {
+            }
+            else if (type.IsEnum)
+            {
                 return new EnumConverter(type);
+            } else if(type.Equals(typeof(DateTime))) {
+                return new DateTimeConverter();
             } else {
                 throw new ActivityInfoException(String.Format("Invalid type '{0}' for property '{1}' in {2}",
                                                               type.FullName,

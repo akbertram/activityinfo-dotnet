@@ -5,7 +5,7 @@ namespace ActivityInfo
 {
     /// <summary>
     /// A set of changes to a Form's Records.
-    /// </summary>
+    /// </summary>  
     public class Transaction
     {
         private List<IChange> _changes;
