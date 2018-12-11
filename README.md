@@ -1,7 +1,9 @@
 
 # ActivityInfo.NET
 
-This repository contains a client for ActivityInfo for the .NET environment, written in C#.
+This repository contains a client for ActivityInfo for the .NET environment, written in C#. For an introduction
+to the client, you can watch a recording of our [2018 webinar](https://www.gotostage.com/channel/38037f33c0b74793a97a2b8061528f95/recording/e6c84b2adc9043018e8671068e551afe/watch) 
+on the library.
 
 ## Adding the Library to your Project
 
