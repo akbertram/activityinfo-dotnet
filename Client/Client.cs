@@ -17,30 +17,30 @@ namespace ActivityInfo
         private Random random = new Random();
         private Newtonsoft.Json.JsonSerializer jsonSerializer;
         private string baseUrl;
-        private NetworkCredential credential;
+        private string authentication;
 
         public Client(string email, String password)
         {
             this.baseUrl = "https://www.activityinfo.org/resources";
-            this.credential = new NetworkCredential(email, password);
+            this.authentication = "Basic " + System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(email + ":" + password));
+
             jsonSerializer = new Newtonsoft.Json.JsonSerializer();
-            jsonSerializer.DateFormatString = "yyyy-MM-dd"; 
+            jsonSerializer.DateFormatString = "yyyy-MM-dd";
         }
 
-        public List<Partner> QueryPartners(int databaseId) 
+        public List<Partner> QueryPartners(int databaseId)
         {
             var formId = string.Format("P{0:D10}", databaseId);
             return Query<Partner>(formId);
         }
 
-        public T QueryResource<T>(string path) 
+        public T QueryResource<T>(string path)
         {
             HttpWebRequest request = WebRequest.CreateHttp(baseUrl + path);
             request.Accept = "application/json";
             request.ContentType = "application/json; charset=UTF-8";
-            request.PreAuthenticate = true;
             request.Method = "GET";
-            request.Credentials = this.credential;
+            request.Headers.Add("Authorization", authentication);
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -50,7 +50,8 @@ namespace ActivityInfo
             }
         }
 
-        public DatabaseMetadata QueryDatabase(int databaseId) {
+        public DatabaseMetadata QueryDatabase(int databaseId)
+        {
             return QueryResource<DatabaseMetadata>(
                 String.Format("/database/{0}", databaseId));
         }
@@ -73,7 +74,8 @@ namespace ActivityInfo
             return QueryResource<ColumnSet>(String.Format("/form/{0}/query/columns", formId));
         }
 
-        private byte[] SerializeBody(object value) {
+        private byte[] SerializeBody(object value)
+        {
 
             StringWriter writer = new StringWriter();
             jsonSerializer.Serialize(new JsonTextWriter(writer), value);
@@ -81,7 +83,8 @@ namespace ActivityInfo
             return System.Text.Encoding.UTF8.GetBytes(writer.ToString());
         }
 
-        public ColumnSet Query(QueryModel query) {
+        public ColumnSet Query(QueryModel query)
+        {
 
             byte[] body = SerializeBody(query);
 
@@ -91,7 +94,7 @@ namespace ActivityInfo
             request.ContentLength = body.Length;
             request.PreAuthenticate = true;
             request.Method = "POST";
-            request.Credentials = this.credential;
+            request.Headers.Add("Authorization", authentication);
 
             using (Stream requestStream = request.GetRequestStream())
             {
@@ -100,7 +103,8 @@ namespace ActivityInfo
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-            if(response.StatusCode != HttpStatusCode.OK) {
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
                 throw new ActivityInfoException(String.Format("Request failed: {0}", response.StatusCode));
             }
 
@@ -115,11 +119,12 @@ namespace ActivityInfo
             return String.Format("s{0:D10}", random.Next());
         }
 
-        public T QueryRecord<T>(RecordRef recordRef) where T : BaseRecord, new() {
+        public T QueryRecord<T>(RecordRef recordRef) where T : BaseRecord, new()
+        {
 
-            var url = String.Format("{0}/form/{1}/record/{2}", 
-                                    baseUrl, 
-                                    recordRef.FormId, 
+            var url = String.Format("{0}/form/{1}/record/{2}",
+                                    baseUrl,
+                                    recordRef.FormId,
                                     recordRef.RecordId);
 
             HttpWebRequest request = WebRequest.CreateHttp(url);
@@ -127,7 +132,7 @@ namespace ActivityInfo
             request.ContentType = "application/json; charset=UTF-8";
             request.PreAuthenticate = true;
             request.Method = "GET";
-            request.Credentials = this.credential;
+            request.Headers.Add("Authorization", authentication);
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -157,7 +162,8 @@ namespace ActivityInfo
         /// <returns>The record.</returns>
         /// <param name="record">The record to create</param>
         /// <typeparam name="T">The type of the record</typeparam>
-        public RecordRef CreateRecord<T>(T record) where T : BaseRecord {
+        public RecordRef CreateRecord<T>(T record) where T : BaseRecord
+        {
             Transaction tx = new Transaction();
             record.RecordId = GenerateId();
 
@@ -170,7 +176,7 @@ namespace ActivityInfo
 
         public void DeleteRecord(RecordRef recordRef)
         {
-            
+
 
         }
 
@@ -179,14 +185,15 @@ namespace ActivityInfo
         /// </summary>
         /// <param name="record">Record.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
-        public void UpdateRecord<T>(T record) where T : BaseRecord {
+        public void UpdateRecord<T>(T record) where T : BaseRecord
+        {
             Transaction tx = new Transaction();
             tx.AddChange(new RecordUpdate(record));
 
             ExecuteUpdate(tx);
         }
 
-        public void ExecuteUpdate(IChange change) 
+        public void ExecuteUpdate(IChange change)
         {
             Transaction tx = new Transaction();
             tx.AddChange(change);
@@ -194,7 +201,7 @@ namespace ActivityInfo
             ExecuteUpdate(tx);
         }
 
-        public void ExecuteUpdate(Transaction tx) 
+        public void ExecuteUpdate(Transaction tx)
         {
             byte[] body = SerializeBody(tx);
 
@@ -203,7 +210,7 @@ namespace ActivityInfo
             request.ContentType = "application/json; charset=UTF-8";
             request.ContentLength = body.Length;
             request.PreAuthenticate = true;
-            request.Credentials = this.credential;
+            request.Headers.Add("Authorization", authentication);
             request.Method = "POST";
 
             using (Stream requestStream = request.GetRequestStream())
@@ -215,8 +222,10 @@ namespace ActivityInfo
             try
             {
                 response = (HttpWebResponse)request.GetResponse();
-            } catch(WebException e) {
-                response = (HttpWebResponse)e.Response;   
+            }
+            catch (WebException e)
+            {
+                response = (HttpWebResponse)e.Response;
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
@@ -229,7 +238,8 @@ namespace ActivityInfo
             }
         }
 
-        private string ReadErrorMessage(WebResponse response) {
+        private string ReadErrorMessage(WebResponse response)
+        {
             using (StreamReader reader = new StreamReader(response.GetResponseStream()))
             {
                 return reader.ReadToEnd();
