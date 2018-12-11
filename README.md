@@ -22,7 +22,7 @@ namespace MyApplication
     {
         public static void Main(string[] args)
         {
-            var client = new ActivityInfo.Client("api+training@bedatadriven.com", "testing123");
+            var client = new ActivityInfo.Client("api+training@bedatadriven.com", "*******");
         }
     }
 }
